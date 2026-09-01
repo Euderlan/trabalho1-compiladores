@@ -1,5 +1,1 @@
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("Tradutor de Aquecimento");
-    }
-}
+// Deprecated original Main class. Use com.example.translator.Main instead.
