@@ -10,19 +10,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.IntBinaryOperator;
 
+// Classe que interpreta e executa instruções em notação pós‑fixa (RPN).
 public class Interpreter {
     private final Deque<Integer> stack = new ArrayDeque<>();
     private final Map<String, Integer> variables = new HashMap<>();
 
-    /** Executes the list of postfix statements produced by the parser. */
+    /**
+     * Executa a lista de instruções produzidas pelo parser.
+     */
     public void interpret(List<List<Token>> statements) {
         for (List<Token> stmt : statements) {
             for (Token token : stmt) {
                 switch (token.type) {
                     case NUMBER:
+                        // Empilha literal numérico.
                         stack.push((Integer) token.literal);
                         break;
                     case IDENTIFIER:
+                        // Busca valor da variável.
                         Integer value = variables.get(token.lexeme);
                         if (value == null) {
                             runtimeError(token, "Undefined variable.");
@@ -47,25 +52,29 @@ public class Interpreter {
                         });
                         break;
                     case STORE:
+                        // Armazena valor na variável.
                         Integer val = stack.pop();
                         variables.put(token.lexeme, val);
                         break;
                     case PRINT_CMD:
+                        // Imprime valor no topo da pilha.
                         System.out.println(stack.pop());
                         break;
                     default:
-                        // No action for other token types.
+                        // Nenhuma ação para outros tipos de token.
                 }
             }
         }
     }
 
+    // Executa operação binária entre dois operandos da pilha.
     private void binaryOp(IntBinaryOperator op) {
         int right = stack.pop();
         int left = stack.pop();
         stack.push(op.applyAsInt(left, right));
     }
 
+    // Lança exceção de erro de execução.
     private void runtimeError(Token token, String message) {
         throw new RuntimeException("[line " + token.line + "] Runtime error: " + message);
     }

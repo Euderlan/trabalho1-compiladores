@@ -6,15 +6,19 @@ import com.example.translator.lexer.TokenType;
 import java.util.ArrayList;
 import java.util.List;
 
+// Classe responsável por analisar a lista de tokens e gerar representação pós‑fixa (RPN).
 public class Parser {
     private final List<Token> tokens;
     private int current = 0;
 
+    // Construtor que recebe a lista de tokens.
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
     }
 
-    /** Parses the whole program and returns a list of statements, each represented as a list of postfix tokens. */
+    /**
+     * Analisa todo o programa e devolve uma lista de instruções, cada uma representada como lista de tokens em ordem pós‑fixa.
+     */
     public List<List<Token>> parse() {
         List<List<Token>> statements = new ArrayList<>();
         while (!isAtEnd()) {
@@ -23,6 +27,7 @@ public class Parser {
         return statements;
     }
 
+    // Analisa uma declaração (let ou print).
     private List<Token> declaration() {
         if (match(TokenType.LET)) {
             return letStatement();
@@ -33,40 +38,44 @@ public class Parser {
         throw error(peek(), "Expected 'let' or 'print' statement.");
     }
 
+    // Analisa declaração let.
     private List<Token> letStatement() {
         Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
         consume(TokenType.EQUAL, "Expect '=' after variable name.");
         List<Token> exprPostfix = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after expression.");
-        // Synthetic STORE token carries the variable name.
+        // Token sintético STORE carrega o nome da variável.
         exprPostfix.add(new Token(TokenType.STORE, name.lexeme, null, name.line));
         return exprPostfix;
     }
 
+    // Analisa declaração print.
     private List<Token> printStatement() {
         List<Token> exprPostfix = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after expression.");
-        // Synthetic PRINT_CMD token triggers printing.
+        // Token sintético PRINT_CMD sinaliza impressão.
         exprPostfix.add(new Token(TokenType.PRINT_CMD, "print", null, previous().line));
         return exprPostfix;
     }
 
-    // Expression parsing with precedence (recursive descent).
+    // Expressão (precedência + e -).
     private List<Token> expression() {
-        return term(); // Handles + and -
+        return term(); // Trata + e -
     }
 
+    // Term (precedência * e /).
     private List<Token> term() {
         List<Token> tokens = factor();
         while (match(TokenType.PLUS, TokenType.MINUS)) {
             Token operator = previous();
             List<Token> right = factor();
             tokens.addAll(right);
-            tokens.add(operator); // RPN: left right op
+            tokens.add(operator); // RPN: esquerda direita operador
         }
         return tokens;
     }
 
+    // Fator (operadores de multiplicação/divisão).
     private List<Token> factor() {
         List<Token> tokens = primary();
         while (match(TokenType.STAR, TokenType.SLASH)) {
@@ -78,10 +87,10 @@ public class Parser {
         return tokens;
     }
 
+    // Primário (número, identificador ou expressão entre parênteses).
     private List<Token> primary() {
         if (match(TokenType.NUMBER, TokenType.IDENTIFIER)) {
-            // The matched token is already added to the postfix list by virtue of being returned.
-            // We'll create a list containing that token.
+            // O token já foi adicionado à lista pós‑fixa.
             Token t = previous();
             List<Token> list = new ArrayList<>();
             list.add(t);
@@ -95,7 +104,7 @@ public class Parser {
         throw error(peek(), "Expect expression.");
     }
 
-    // Helper methods -------------------------------------------------------
+    // ---------- Métodos auxiliares ----------
 
     private boolean match(TokenType... types) {
         for (TokenType type : types) {

@@ -1,20 +1,21 @@
 package com.example.translator.lexer;
 
+// Enum que representa os diferentes tipos de tokens reconhecidos pelo analisador léxico.
 public enum TokenType {
-    // Single-character tokens.
+    // Tokens de um único caractere.
     LEFT_PAREN, RIGHT_PAREN,
     PLUS, MINUS, STAR, SLASH,
     EQUAL, SEMICOLON,
 
-    // Literals.
+    // Literais.
     IDENTIFIER, NUMBER,
 
-    // Keywords.
+    // Palavras‑chave.
     LET, PRINT,
 
-    // End-of-file.
+    // Fim de arquivo.
     EOF,
 
-    // Synthetic tokens used by the interpreter.
+    // Tokens sintéticos usados pelo interpretador.
     STORE, PRINT_CMD
 }
