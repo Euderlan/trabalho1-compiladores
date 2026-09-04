@@ -1,21 +1,16 @@
 package com.example.translator.lexer;
 
-// Enum que representa os diferentes tipos de tokens reconhecidos pelo analisador léxico.
+/**
+ * Enumeração dos tipos de token reconhecidos pelo analisador léxico (Scanner).
+ * Cada constante representa um elemento sintático da linguagem de expressões aritméticas.
+ */
 public enum TokenType {
-    // Tokens de um único caractere.
+    // Parênteses
     LEFT_PAREN, RIGHT_PAREN,
+    // Operadores aritméticos
     PLUS, MINUS, STAR, SLASH,
-    EQUAL, SEMICOLON,
-
-    // Literais.
-    IDENTIFIER, NUMBER,
-
-    // Palavras‑chave.
-    LET, PRINT,
-
-    // Fim de arquivo.
-    EOF,
-
-    // Tokens sintéticos usados pelo interpretador.
-    STORE, PRINT_CMD
+    // Literais numéricos
+    NUMBER,
+    // Fim de arquivo (EOF)
+    EOF
 }

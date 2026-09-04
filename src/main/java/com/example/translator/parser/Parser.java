@@ -3,147 +3,94 @@ package com.example.translator.parser;
 import com.example.translator.lexer.Token;
 import com.example.translator.lexer.TokenType;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-// Classe responsável por analisar a lista de tokens e gerar representação pós‑fixa (RPN).
+// Analisador sintático (parser) que converte a lista de tokens produzida pelo Scanner
+// de notação infixa para Notação Polonesa Reversa (RPN - postfix) usando o algoritmo
+// da "shunting-yard". O resultado (lista de tokens em ordem pós-fixa) pode ser
+// alimentado ao Interpreter para gerar as instruções da máquina de pilha.
 public class Parser {
+    // Tokens de entrada.
     private final List<Token> tokens;
+    // Índice do token atual.
     private int current = 0;
 
-    // Construtor que recebe a lista de tokens.
+    // Precedência dos operadores (valor maior = maior precedência).
+    private static final Map<TokenType, Integer> PRECEDENCE = Map.of(
+            TokenType.PLUS, 1,
+            TokenType.MINUS, 1,
+            TokenType.STAR, 2,
+            TokenType.SLASH, 2
+    );
+
+    // Cria um novo parser.
+    // @param tokens lista de tokens já lexicalmente analisados
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
     }
 
-    /**
-     * Analisa todo o programa e devolve uma lista de instruções, cada uma representada como lista de tokens em ordem pós‑fixa.
-     */
-    public List<List<Token>> parse() {
-        List<List<Token>> statements = new ArrayList<>();
+    // Executa o parsing e devolve a lista de tokens em ordem pós-fixa (RPN).
+    // @return lista de tokens na ordem que pode ser consumida por um interpretador
+    public List<Token> parse() {
+        List<Token> output = new ArrayList<>();
+        Deque<Token> operators = new ArrayDeque<>();
+
         while (!isAtEnd()) {
-            statements.add(declaration());
-        }
-        return statements;
-    }
-
-    // Analisa uma declaração (let ou print).
-    private List<Token> declaration() {
-        if (match(TokenType.LET)) {
-            return letStatement();
-        }
-        if (match(TokenType.PRINT)) {
-            return printStatement();
-        }
-        throw error(peek(), "Expected 'let' or 'print' statement.");
-    }
-
-    // Analisa declaração let.
-    private List<Token> letStatement() {
-        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
-        consume(TokenType.EQUAL, "Expect '=' after variable name.");
-        List<Token> exprPostfix = expression();
-        consume(TokenType.SEMICOLON, "Expect ';' after expression.");
-        // Token sintético STORE carrega o nome da variável.
-        exprPostfix.add(new Token(TokenType.STORE, name.lexeme, null, name.line));
-        return exprPostfix;
-    }
-
-    // Analisa declaração print.
-    private List<Token> printStatement() {
-        List<Token> exprPostfix = expression();
-        consume(TokenType.SEMICOLON, "Expect ';' after expression.");
-        // Token sintético PRINT_CMD sinaliza impressão.
-        exprPostfix.add(new Token(TokenType.PRINT_CMD, "print", null, previous().line));
-        return exprPostfix;
-    }
-
-    // Expressão (precedência + e -).
-    private List<Token> expression() {
-        return term(); // Trata + e -
-    }
-
-    // Term (precedência * e /).
-    private List<Token> term() {
-        List<Token> tokens = factor();
-        while (match(TokenType.PLUS, TokenType.MINUS)) {
-            Token operator = previous();
-            List<Token> right = factor();
-            tokens.addAll(right);
-            tokens.add(operator); // RPN: esquerda direita operador
-        }
-        return tokens;
-    }
-
-    // Fator (operadores de multiplicação/divisão).
-    private List<Token> factor() {
-        List<Token> tokens = primary();
-        while (match(TokenType.STAR, TokenType.SLASH)) {
-            Token operator = previous();
-            List<Token> right = primary();
-            tokens.addAll(right);
-            tokens.add(operator);
-        }
-        return tokens;
-    }
-
-    // Primário (número, identificador ou expressão entre parênteses).
-    private List<Token> primary() {
-        if (match(TokenType.NUMBER, TokenType.IDENTIFIER)) {
-            // O token já foi adicionado à lista pós‑fixa.
-            Token t = previous();
-            List<Token> list = new ArrayList<>();
-            list.add(t);
-            return list;
-        }
-        if (match(TokenType.LEFT_PAREN)) {
-            List<Token> inner = expression();
-            consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
-            return inner;
-        }
-        throw error(peek(), "Expect expression.");
-    }
-
-    // ---------- Métodos auxiliares ----------
-
-    private boolean match(TokenType... types) {
-        for (TokenType type : types) {
-            if (check(type)) {
-                advance();
-                return true;
+            Token token = advance();
+            switch (token.type) {
+                case NUMBER:
+                    output.add(token);
+                    break;
+                case LEFT_PAREN:
+                    operators.push(token);
+                    break;
+                case RIGHT_PAREN:
+                    // Desempilha ate encontrar o parenteses esquerdo correspondente.
+                    while (!operators.isEmpty() && operators.peek().type != TokenType.LEFT_PAREN) {
+                        output.add(operators.pop());
+                    }
+                    // Remove o parenteses esquerdo da pilha.
+                    if (!operators.isEmpty() && operators.peek().type == TokenType.LEFT_PAREN) {
+                        operators.pop();
+                    }
+                    break;
+                case PLUS:
+                case MINUS:
+                case STAR:
+                case SLASH:
+                    // Enquanto houver operador de maior ou igual precedencia no topo da pilha, desempilha-o.
+                    while (!operators.isEmpty()
+                            && operators.peek().type != TokenType.LEFT_PAREN
+                            && PRECEDENCE.getOrDefault(operators.peek().type, 0) >= PRECEDENCE.getOrDefault(token.type, 0)) {
+                        output.add(operators.pop());
+                    }
+                    // Empilha o operador corrente.
+                    operators.push(token);
+                    break;
+                default:
+                    // Ignora outros tokens (por exemplo, EOF, que sera tratado apos o loop).
+                    break;
             }
         }
-        return false;
+
+        // Esvazia a pilha de operadores restante.
+        while (!operators.isEmpty()) {
+            output.add(operators.pop());
+        }
+        return output;
     }
 
-    private Token consume(TokenType type, String message) {
-        if (check(type)) return advance();
-        throw error(peek(), message);
-    }
-
-    private boolean check(TokenType type) {
-        if (isAtEnd()) return false;
-        return peek().type == type;
-    }
-
-    private Token advance() {
-        if (!isAtEnd()) current++;
-        return previous();
-    }
-
+    /** Verifica se ja consumimos todos os tokens ou se o proximo e EOF.*/
     private boolean isAtEnd() {
-        return peek().type == TokenType.EOF;
+        return current >= tokens.size() || tokens.get(current).type == TokenType.EOF;
     }
 
-    private Token peek() {
-        return tokens.get(current);
-    }
-
-    private Token previous() {
-        return tokens.get(current - 1);
-    }
-
-    private RuntimeException error(Token token, String message) {
-        return new RuntimeException("[line " + token.line + "] Error at '" + token.lexeme + "': " + message);
+    /**Consome o proximo token e avanca o cursor.*/
+    private Token advance() {
+        if (!isAtEnd()) {
+            return tokens.get(current++);
+        }
+        // Caso nunca ocorra, devolve um token EOF ficticio.
+        return new Token(TokenType.EOF, "", null, -1);
     }
 }

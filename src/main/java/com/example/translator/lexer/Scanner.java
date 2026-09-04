@@ -1,44 +1,44 @@
 package com.example.translator.lexer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-// Classe que realiza a análise léxica (scanner) da fonte.
+/**
+ * Analisador léxico (tokenizador) simples para expressões aritméticas.
+ * Reconhece literais inteiros, operadores (+, -, *, /) e parênteses.
+ */
 public class Scanner {
-    // Fonte de código e lista de tokens.
+    /** Texto de entrada (fonte) a ser analisado. */
     private final String source;
+    /** Lista de tokens reconhecidos. */
     private final List<Token> tokens = new ArrayList<>();
 
-    private int start = 0;
-    private int current = 0;
-    private int line = 1;
+    // Indices auxiliares para o algoritmo de varredura.
+    private int start = 0;   // início do lexema atual
+    private int current = 0; // posição atual no texto de entrada
+    private int line = 1;    // número da linha (para mensagens de erro)
 
-    private static final Map<String, TokenType> keywords;
-    static {
-        // Mapeamento de palavras‑chave.
-        keywords = new HashMap<>();
-        keywords.put("let", TokenType.LET);
-        keywords.put("print", TokenType.PRINT);
-    }
-
-    // Construtor que recebe a fonte a ser analisada.
+    /** Cria um scanner para o texto fornecido. */
+    /** @param source texto contendo a expressão a ser tokenizada */
     public Scanner(String source) {
         this.source = source;
     }
 
-    // Escaneia toda a fonte e retorna a lista de tokens.
+    
+     // Executa a varredura completa e devolve a lista de tokens.
+     //@return lista imutável dos tokens encontrados, incluindo o token EOF ao final
     public List<Token> scanTokens() {
         while (!isAtEnd()) {
+            // Cada iteração inicia a captura de um novo lexema.
             start = current;
             scanToken();
         }
+        // Token de fim de arquivo.
         tokens.add(new Token(TokenType.EOF, "", null, line));
         return tokens;
     }
 
-    // Processa um único caractere.
+    //Analisa o próximo caractere da entrada e gera o token correspondente.
     private void scanToken() {
         char c = advance();
         switch (c) {
@@ -60,16 +60,10 @@ public class Scanner {
             case '/':
                 addToken(TokenType.SLASH);
                 break;
-            case '=':
-                addToken(TokenType.EQUAL);
-                break;
-            case ';':
-                addToken(TokenType.SEMICOLON);
-                break;
             case ' ':
             case '\r':
             case '\t':
-                // Ignora espaço em branco.
+                // Ignora espaços em branco.
                 break;
             case '\n':
                 line++;
@@ -77,68 +71,48 @@ public class Scanner {
             default:
                 if (isDigit(c)) {
                     number();
-                } else if (isAlpha(c)) {
-                    identifier();
                 } else {
-                    // Por enquanto, ignora caracteres inesperados.
+                    // Caractere desconhecido – simplesmente o ignora.
                 }
                 break;
         }
     }
 
-    // Lê um identificador ou palavra‑chave.
-    private void identifier() {
-        while (isAlphaNumeric(peek())) advance();
-        String text = source.substring(start, current);
-        TokenType type = keywords.getOrDefault(text, TokenType.IDENTIFIER);
-        addToken(type);
-    }
-
-    // Lê um número literal.
+    /**Reconhece um número inteiro a partir da posição atual. */
     private void number() {
         while (isDigit(peek())) advance();
         String text = source.substring(start, current);
-        int value = Integer.parseInt(text);
+        Integer value = Integer.parseInt(text);
         addToken(TokenType.NUMBER, value);
     }
 
-    // Verifica se caractere é letra ou underline.
-    private boolean isAlpha(char c) {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
-    }
-
-    // Verifica se letra ou número.
-    private boolean isAlphaNumeric(char c) {
-        return isAlpha(c) || isDigit(c);
-    }
-
-    // Verifica se caractere é dígito.
+    /**Verifica se o caractere está entre '0' e '9'.*/
     private boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
 
-    // Avança e devolve o caractere atual.
+    /**Consome o próximo caractere da fonte e avança o cursor.*/
     private char advance() {
         return source.charAt(current++);
     }
 
-    // Olha próximo caractere sem consumir.
+    /**Olha o próximo caractere sem avançar o cursor.*/
     private char peek() {
         if (isAtEnd()) return '\0';
         return source.charAt(current);
     }
 
-    // Verifica se o scanner chegou ao final da fonte.
+    /**Indica se já chegamos ao final da string de origem.*/
     private boolean isAtEnd() {
         return current >= source.length();
     }
 
-    // Adiciona token simples sem literal.
+    /**Cria um token sem literal associado.*/
     private void addToken(TokenType type) {
         addToken(type, null);
     }
 
-    // Adiciona token, opcionalmente com literal.
+    /**Cria um token possivelmente contendo um literal (ex.: valor numérico).*/
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
