@@ -77,8 +77,8 @@ public class Main {
         java.util.Deque<Integer> stack = new java.util.ArrayDeque<>();
         for (String instr : instructions) {
             if (instr.startsWith("push ")) {
-                int value = Integer.parseInt(instr.substring(5).trim());
-                stack.push(value);
+                double value = Double.parseDouble(instr.substring(5).trim());
+                stack.push((int)Math.round(value));
             } else {
                 // Operacao binaria - requer ao menos dois operandos na pilha.
                 if (stack.size() < 2) {

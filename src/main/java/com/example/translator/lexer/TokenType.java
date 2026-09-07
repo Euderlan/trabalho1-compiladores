@@ -11,6 +11,8 @@ public enum TokenType {
     PLUS, MINUS, STAR, SLASH,
     // Literais numéricos
     NUMBER,
+    // Identificador (variável)
+    IDENTIFIER,
     // Fim de arquivo (EOF)
     EOF
 }

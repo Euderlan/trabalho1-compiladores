@@ -71,19 +71,63 @@ public class Scanner {
             default:
                 if (isDigit(c)) {
                     number();
+                } else if (isAlpha(c)) {
+                    identifier();
                 } else {
-                    // Caractere desconhecido – simplesmente o ignora.
+                    error("Caractere inesperado: '" + c + "' na linha " + line);
                 }
                 break;
         }
     }
 
-    /**Reconhece um número inteiro a partir da posição atual. */
+    /**Reconhece um número (inteiro ou ponto flutuante) a partir da posição atual. */
     private void number() {
         while (isDigit(peek())) advance();
+        // Verifica ponto decimal.
+        if (peek() == '.' && isDigit(peekNext())) {
+            // Consome o ponto.
+            advance();
+            // Consome a parte fracionária.
+            while (isDigit(peek())) advance();
+        }
         String text = source.substring(start, current);
-        Integer value = Integer.parseInt(text);
+        Object value;
+        if (text.contains(".")) {
+            value = Double.parseDouble(text);
+        } else {
+            value = Integer.parseInt(text);
+        }
         addToken(TokenType.NUMBER, value);
+    }
+
+    // Lookahead one character ahead without consuming.
+    private char peekNext() {
+        if (current + 1 >= source.length()) return '\0';
+        return source.charAt(current + 1);
+    }
+
+    /**Verifica se o caractere é uma letra (a‑z, A‑Z) ou sublinhado. */
+    private boolean isAlpha(char c) {
+        return (c >= 'a' && c <= 'z') ||
+               (c >= 'A' && c <= 'Z') ||
+               c == '_';
+    }
+
+    /**Verifica se o caractere é alfanumérico (letra ou dígito). */
+    private boolean isAlphaNumeric(char c) {
+        return isAlpha(c) || isDigit(c);
+    }
+
+    /**Reconhece um identificador (sequência de letras, dígitos ou sublinhado). */
+    private void identifier() {
+        while (isAlphaNumeric(peek())) advance();
+        // O lexema já está na substring; literal opcional não usado.
+        addToken(TokenType.IDENTIFIER);
+    }
+
+    /**Emite mensagem de erro de lexicalização para o usuário. */
+    private void error(String message) {
+        System.err.println(message);
     }
 
     /**Verifica se o caractere está entre '0' e '9'.*/
