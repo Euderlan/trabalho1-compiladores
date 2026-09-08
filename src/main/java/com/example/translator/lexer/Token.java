@@ -27,6 +27,6 @@ public class Token {
 
     @Override
     public String toString() {
-        return type + " " + lexeme + (literal != null ? " " + literal : "");
+        return "<" + type + ">" + lexeme + "</" + type + ">";
     }
 }

@@ -29,20 +29,24 @@ public class Scanner {
     /**Retorna o próximo token como String, avançando na entrada.
      * Reconhece números inteiros (um ou mais dígitos), +, - e EOF.
      * @return próximo token ou null ao fim da entrada */
-    public String nextToken() {
+    public Token nextToken() {
         char ch = peek();
-        if (ch == '\0') return null;
+        if (ch == '\0') return null; // Retorna null ao chegar ao fim para evitar loop infinito
+
         if (ch == '0') {
             advance();
-            return Character.toString(ch);
+            return new Token(TokenType.NUMBER, Character.toString(ch), null, line);
         } else if (Character.isDigit(ch)) {
-            return readNumber();
+            return readNumber(); // Chama readNumber() aqui
         }
+
         switch (ch) {
             case '+':
+                advance();
+                return new Token(TokenType.PLUS, "+", null, line);
             case '-':
                 advance();
-                return Character.toString(ch);
+                return new Token(TokenType.MINUS, "-", null, line);
             default:
                 break;
         }
@@ -52,13 +56,15 @@ public class Scanner {
     /**Reconhece um número inteiro positivo a partir da posição atual.
      * Consome todos os dígitos consecutivos e devolve o lexema.
      * @return lexema numérico */
-    private String readNumber() {
+    private Token readNumber() {
         int start = current;
         while (Character.isDigit(peek())) {
             advance();
         }
-        return source.substring(start, current);
+        String n = source.substring(start, current);
+        return new Token(TokenType.NUMBER, n, null, line);
     }
+
 
      //@return lista imutável dos tokens encontrados, incluindo o token EOF ao final
     public List<Token> scanTokens() {
@@ -201,7 +207,7 @@ public class Scanner {
     public static void main(String[] args) {
         String input = "289-85+0+69";
         Scanner scan = new Scanner(input);
-        String tok;
+        Token tok; // <--- Altere para Token
         while ((tok = scan.nextToken()) != null) {
             System.out.println(tok);
         }
