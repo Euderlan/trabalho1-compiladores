@@ -18,14 +18,53 @@ public class Scanner {
     private int current = 0; // posição atual no texto de entrada
     private int line = 1;    // número da linha (para mensagens de erro)
 
-    /** Cria um scanner para o texto fornecido. */
+    /**Cria um scanner para o texto fornecido. */
     /** @param source texto contendo a expressão a ser tokenizada */
     public Scanner(String source) {
         this.source = source;
     }
 
-    
-     // Executa a varredura completa e devolve a lista de tokens.
+    // ------------------------------------------------------------
+    // Estágio 1 — nextToken() retornando String (PDF 4)
+    // ------------------------------------------------------------
+
+    /**Retorna o próximo token como String, avançando na entrada.
+     * Reconhece números inteiros (um ou mais dígitos), +, - e EOF.
+     * @return próximo token ou null ao fim da entrada */
+    public String nextToken() {
+        char ch = peek();
+        if (ch == '\0') return null;
+        if (ch == '0') {
+            advance();
+            return Character.toString(ch);
+        } else if (Character.isDigit(ch)) {
+            return readNumber();
+        }
+        switch (ch) {
+            case '+':
+            case '-':
+                advance();
+                return Character.toString(ch);
+            default:
+                break;
+        }
+        throw new Error("lexical error at " + ch);
+    }
+
+    /**Reconhece um número inteiro positivo a partir da posição atual.
+     * Consome todos os dígitos consecutivos e devolve o lexema.
+     * @return lexema numérico */
+    private String readNumber() {
+        int start = current;
+        while (Character.isDigit(peek())) {
+            advance();
+        }
+        return source.substring(start, current);
+    }
+
+    // ------------------------------------------------------------
+    // Código original (scanTokens) mantido intacto abaixo
+    // ------------------------------------------------------------
      //@return lista imutável dos tokens encontrados, incluindo o token EOF ao final
     public List<Token> scanTokens() {
         while (!isAtEnd()) {
@@ -160,5 +199,18 @@ public class Scanner {
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
+    }
+
+    // ------------------------------------------------------------
+    // Demonstração do PDF 4: nextToken() com String
+    // ------------------------------------------------------------
+    /**Teste de smoke: imprime cada token da entrada "289-85+0+69". */
+    public static void main(String[] args) {
+        String input = "289-85+0+69";
+        Scanner scan = new Scanner(input);
+        String tok;
+        while ((tok = scan.nextToken()) != null) {
+            System.out.println(tok);
+        }
     }
 }
