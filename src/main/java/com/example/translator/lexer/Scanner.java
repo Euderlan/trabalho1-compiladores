@@ -24,9 +24,7 @@ public class Scanner {
         this.source = source;
     }
 
-    // ------------------------------------------------------------
-    // Estágio 1 — nextToken() retornando String (PDF 4)
-    // ------------------------------------------------------------
+    // Estágio 1 — nextToken() retornando String
 
     /**Retorna o próximo token como String, avançando na entrada.
      * Reconhece números inteiros (um ou mais dígitos), +, - e EOF.
@@ -62,9 +60,6 @@ public class Scanner {
         return source.substring(start, current);
     }
 
-    // ------------------------------------------------------------
-    // Código original (scanTokens) mantido intacto abaixo
-    // ------------------------------------------------------------
      //@return lista imutável dos tokens encontrados, incluindo o token EOF ao final
     public List<Token> scanTokens() {
         while (!isAtEnd()) {
@@ -201,9 +196,7 @@ public class Scanner {
         tokens.add(new Token(type, text, literal, line));
     }
 
-    // ------------------------------------------------------------
-    // Demonstração do PDF 4: nextToken() com String
-    // ------------------------------------------------------------
+
     /**Teste de smoke: imprime cada token da entrada "289-85+0+69". */
     public static void main(String[] args) {
         String input = "289-85+0+69";
