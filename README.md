@@ -43,3 +43,12 @@ sub
 mul
 add
 Result: 8
+
+javac -encoding utf-8 (Get-ChildItem -Recurse -Filter *.java).FullName
+java -cp src/main/java com.example.translator.lexer.Scanner
+
+Saída esperada:<NUMBER>45</NUMBER>
+<PLUS>+</PLUS>
+<IDENT>preco</IDENT>
+<MINUS>-</MINUS>
+<NUMBER>876</NUMBER>

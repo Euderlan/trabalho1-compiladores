@@ -5,30 +5,23 @@ import java.util.List;
 
 /**
  * Analisador léxico (tokenizador) simples para expressões aritméticas.
- * Reconhece literais inteiros e operadores (+, -).
  */
 public class Scanner {
-    /** Texto de entrada (fonte) a ser analisado. */
     private final String source;
-    /** Lista de tokens reconhecidos. */
     private final List<Token> tokens = new ArrayList<>();
 
-    // Índices auxiliares para o algoritmo de varredura.
     private int start = 0;   // início do lexema atual
     private int current = 0; // posição atual no texto de entrada
-    private int line = 1;    // número da linha (para mensagens de erro)
+    private int line = 1;    // número da linha
 
-    /** Cria um scanner para o texto fornecido através de String. */
     public Scanner(String source) {
         this.source = source;
     }
 
-    /** Cria um scanner para o texto fornecido através de um array de bytes. */
     public Scanner(byte[] input) {
         this.source = new String(input);
     }
 
-    /** Ignores espaços em branco, tabulações e quebras de linha na posição atual. */
     private void skipWhitespace() {
         char ch = peek();
         while (ch == ' ' || ch == '\r' || ch == '\t' || ch == '\n') {
@@ -40,14 +33,17 @@ public class Scanner {
         }
     }
 
-    /** Retorna o próximo token como Token, avançando na entrada. */
     public Token nextToken() {
-        // Pula espaços antes de tentar extrair o próximo token
         skipWhitespace();
 
         char ch = peek();
         if (ch == '\0') {
             return new Token(TokenType.EOF, "", null, line);
+        }
+
+        // Verifica se é o início de um identificador (letra ou '_')
+        if (isAlpha(ch)) {
+            return identifier();
         }
 
         if (Character.isDigit(ch)) {
@@ -67,7 +63,27 @@ public class Scanner {
         throw new Error("lexical error at " + ch);
     }
 
-    /** Reconhece um número inteiro positivo a partir da posição atual. */
+    /** Reconhece um identificador (sequência de letras, dígitos ou sublinhado). */
+    private Token identifier() {
+        int startPos = current;
+        while (isAlphaNumeric(peek())) advance();
+
+        String id = source.substring(startPos, current);
+        return new Token(TokenType.IDENT, id);
+    }
+
+    /** Verifica se o caractere é uma letra ou sublinhado. */
+    private boolean isAlpha(char c) {
+        return (c >= 'a' && c <= 'z') ||
+               (c >= 'A' && c <= 'Z') ||
+                c == '_';
+    }
+
+    /** Verifica se o caractere é alfanumérico. */
+    private boolean isAlphaNumeric(char c) {
+        return isAlpha(c) || Character.isDigit(c);
+    }
+
     private Token readNumber() {
         int startPos = current;
         while (Character.isDigit(peek())) {
@@ -147,21 +163,6 @@ public class Scanner {
         return source.charAt(current + 1);
     }
 
-    private boolean isAlpha(char c) {
-        return (c >= 'a' && c <= 'z') ||
-               (c >= 'A' && c <= 'Z') ||
-               c == '_';
-    }
-
-    private boolean isAlphaNumeric(char c) {
-        return isAlpha(c) || isDigit(c);
-    }
-
-    private void identifier() {
-        while (isAlphaNumeric(peek())) advance();
-        addToken(TokenType.IDENTIFIER);
-    }
-
     private void error(String message) {
         System.err.println(message);
     }
@@ -190,5 +191,14 @@ public class Scanner {
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
+    }
+
+    /** Teste da Parte 1 conforme o documento. */
+    public static void main(String[] args) {
+        String input = "45  + preco - 876";
+        Scanner scan = new Scanner(input.getBytes());
+        for (Token tk = scan.nextToken(); tk.type != TokenType.EOF; tk = scan.nextToken()) {
+            System.out.println(tk);
+        }
     }
 }
