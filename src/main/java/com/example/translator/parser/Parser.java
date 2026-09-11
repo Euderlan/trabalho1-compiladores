@@ -5,7 +5,7 @@ import com.example.translator.lexer.Token;
 import com.example.translator.lexer.TokenType;
 
 /**
- * Parser de Descida Recursiva atualizado para aceitar termos (números ou identificadores).
+ * Parser de Descida Recursiva com suporte a atribuição (letStatement).
  */
 public class Parser {
 
@@ -34,7 +34,18 @@ public class Parser {
     }
 
     public void parse() {
+        letStatement();
+    }
+
+    /** letStatement -> 'let' identifier '=' expr ';' */
+    void letStatement() {
+        match(TokenType.LET);
+        String id = currentToken.lexeme;
+        match(TokenType.IDENT);
+        match(TokenType.EQ);
         expr();
+        System.out.println("pop " + id);
+        match(TokenType.SEMICOLON);
     }
 
     /** expr -> term oper */
@@ -75,9 +86,9 @@ public class Parser {
         match(TokenType.NUMBER);
     }
 
-    /** Teste da Parte 2. */
+    /** Teste da Parte 4  */
     public static void main(String[] args) {
-        String input = "45  + preco - 876";
+        String input = "let a = 42 + 5;";
         Parser p = new Parser(input.getBytes());
         p.parse();
     }
