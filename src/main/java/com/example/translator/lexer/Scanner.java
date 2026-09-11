@@ -1,7 +1,9 @@
 package com.example.translator.lexer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Analisador léxico (tokenizador) simples para expressões aritméticas.
@@ -13,6 +15,14 @@ public class Scanner {
     private int start = 0;   // início do lexema atual
     private int current = 0; // posição atual no texto de entrada
     private int line = 1;    // número da linha
+
+    // Tabela de palavras reservadas
+    private static final Map<String, TokenType> keywords;
+
+    static {
+        keywords = new HashMap<>();
+        keywords.put("let", TokenType.LET);
+    }
 
     public Scanner(String source) {
         this.source = source;
@@ -41,7 +51,6 @@ public class Scanner {
             return new Token(TokenType.EOF, "", null, line);
         }
 
-        // Verifica se é o início de um identificador (letra ou '_')
         if (isAlpha(ch)) {
             return identifier();
         }
@@ -57,29 +66,37 @@ public class Scanner {
             case '-':
                 advance();
                 return new Token(TokenType.MINUS, "-", null, line);
+            case '=':
+                advance();
+                return new Token(TokenType.EQ, "=");
+            case ';':
+                advance();
+                return new Token(TokenType.SEMICOLON, ";");
             default:
                 break;
         }
         throw new Error("lexical error at " + ch);
     }
 
-    /** Reconhece um identificador (sequência de letras, dígitos ou sublinhado). */
+    /** Reconhece um identificador ou palavra reservada. */
     private Token identifier() {
         int startPos = current;
         while (isAlphaNumeric(peek())) advance();
 
         String id = source.substring(startPos, current);
-        return new Token(TokenType.IDENT, id);
+        TokenType type = keywords.get(id);
+        if (type == null) {
+            type = TokenType.IDENT;
+        }
+        return new Token(type, id);
     }
 
-    /** Verifica se o caractere é uma letra ou sublinhado. */
     private boolean isAlpha(char c) {
         return (c >= 'a' && c <= 'z') ||
                (c >= 'A' && c <= 'Z') ||
                 c == '_';
     }
 
-    /** Verifica se o caractere é alfanumérico. */
     private boolean isAlphaNumeric(char c) {
         return isAlpha(c) || Character.isDigit(c);
     }
@@ -193,9 +210,9 @@ public class Scanner {
         tokens.add(new Token(type, text, literal, line));
     }
 
-    /** Teste da Parte 1 conforme o documento. */
+    /** Teste da Parte 3  */
     public static void main(String[] args) {
-        String input = "45  + preco - 876";
+        String input = "let a = 42 + 5;";
         Scanner scan = new Scanner(input.getBytes());
         for (Token tk = scan.nextToken(); tk.type != TokenType.EOF; tk = scan.nextToken()) {
             System.out.println(tk);
