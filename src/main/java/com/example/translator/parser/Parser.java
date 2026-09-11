@@ -5,8 +5,7 @@ import com.example.translator.lexer.Token;
 import com.example.translator.lexer.TokenType;
 
 /**
- * Parser de Descida Recursiva configurado para analisar expressões com 
- * números e operadores ('+' e '-'), imprimindo as instruções de máquina de pilha.
+ * Parser de Descida Recursiva atualizado para aceitar termos (números ou identificadores).
  */
 public class Parser {
 
@@ -38,22 +37,36 @@ public class Parser {
         expr();
     }
 
+    /** expr -> term oper */
     void expr() {
-        number();
+        term();
         oper();
     }
 
+    /** oper -> + term oper | - term oper | ϵ */
     void oper() {
         if (currentToken != null && currentToken.type == TokenType.PLUS) {
             match(TokenType.PLUS);
-            number();
+            term();
             System.out.println("add");
             oper();
         } else if (currentToken != null && currentToken.type == TokenType.MINUS) {
             match(TokenType.MINUS);
-            number();
+            term();
             System.out.println("sub");
             oper();
+        }
+    }
+
+    /** term -> number | identifier */
+    void term() {
+        if (currentToken != null && currentToken.type == TokenType.NUMBER) {
+            number();
+        } else if (currentToken != null && currentToken.type == TokenType.IDENT) {
+            System.out.println("push " + currentToken.lexeme);
+            match(TokenType.IDENT);
+        } else {
+            throw new Error("syntax error");
         }
     }
 
@@ -62,9 +75,9 @@ public class Parser {
         match(TokenType.NUMBER);
     }
 
-    /** Exemplo de teste conforme o documento fornecido. */
+    /** Teste da Parte 2. */
     public static void main(String[] args) {
-        String input = "45  + 89   -       876";
+        String input = "45  + preco - 876";
         Parser p = new Parser(input.getBytes());
         p.parse();
     }
