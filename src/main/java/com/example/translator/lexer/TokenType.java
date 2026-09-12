@@ -14,6 +14,7 @@ public enum TokenType {
     IDENTIFIER,
     // Palavras reservadas
     LET,
+    PRINT,
     // Fim de arquivo (EOF)
     EOF
 }

@@ -22,6 +22,7 @@ public class Scanner {
     static {
         keywords = new HashMap<>();
         keywords.put("let", TokenType.LET);
+        keywords.put("print", TokenType.PRINT);
     }
 
     public Scanner(String source) {
@@ -208,14 +209,5 @@ public class Scanner {
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
-    }
-
-    /** Teste da Parte 3  */
-    public static void main(String[] args) {
-        String input = "let a = 42 + 5;";
-        Scanner scan = new Scanner(input.getBytes());
-        for (Token tk = scan.nextToken(); tk.type != TokenType.EOF; tk = scan.nextToken()) {
-            System.out.println(tk);
-        }
     }
 }

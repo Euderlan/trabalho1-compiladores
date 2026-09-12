@@ -5,7 +5,7 @@ import com.example.translator.lexer.Token;
 import com.example.translator.lexer.TokenType;
 
 /**
- * Parser de Descida Recursiva com suporte a atribuição (letStatement).
+ * Parser de Descida Recursiva com suporte a múltiplos comandos (letStatement e printStatement).
  */
 public class Parser {
 
@@ -34,7 +34,33 @@ public class Parser {
     }
 
     public void parse() {
-        letStatement();
+        statements();
+    }
+
+    /** statements -> statement* */
+    void statements() {
+        while (currentToken != null && currentToken.type != TokenType.EOF) {
+            statement();
+        }
+    }
+
+    /** statement -> printStatement | letStatement */
+    void statement() {
+        if (currentToken.type == TokenType.PRINT) {
+            printStatement();
+        } else if (currentToken.type == TokenType.LET) {
+            letStatement();
+        } else {
+            throw new Error("syntax error");
+        }
+    }
+
+    /** printStatement -> 'print' expr ';' */
+    void printStatement() {
+        match(TokenType.PRINT);
+        expr();
+        System.out.println("print");
+        match(TokenType.SEMICOLON);
     }
 
     /** letStatement -> 'let' identifier '=' expr ';' */
@@ -86,9 +112,14 @@ public class Parser {
         match(TokenType.NUMBER);
     }
 
-    /** Teste da Parte 4  */
+    /** Teste */
     public static void main(String[] args) {
-        String input = "let a = 42 + 5;";
+        String input = """
+            let a = 42 + 5 - 8;
+            let b = 56 + 8;
+            print a + b + 6;
+                """;
+
         Parser p = new Parser(input.getBytes());
         p.parse();
     }
