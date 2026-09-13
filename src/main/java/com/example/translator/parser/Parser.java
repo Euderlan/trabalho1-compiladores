@@ -5,12 +5,13 @@ import com.example.translator.lexer.Token;
 import com.example.translator.lexer.TokenType;
 
 /**
- * Parser de Descida Recursiva com suporte a múltiplos comandos (letStatement e printStatement).
+ * Parser de Descida Recursiva que gera instruções de pilha para o Interpretador.
  */
 public class Parser {
 
     private Scanner scan;
     private Token currentToken;
+    private StringBuilder outputBuilder = new StringBuilder();
 
     public Parser(byte[] input) {
         this.scan = new Scanner(new String(input));
@@ -19,6 +20,14 @@ public class Parser {
 
     public Parser(String input) {
         this(input.getBytes());
+    }
+
+    private void emit(String instruction) {
+        outputBuilder.append(instruction).append(System.lineSeparator());
+    }
+
+    public String output() {
+        return outputBuilder.toString();
     }
 
     private void nextToken() {
@@ -59,7 +68,7 @@ public class Parser {
     void printStatement() {
         match(TokenType.PRINT);
         expr();
-        System.out.println("print");
+        emit("print");
         match(TokenType.SEMICOLON);
     }
 
@@ -70,7 +79,7 @@ public class Parser {
         match(TokenType.IDENT);
         match(TokenType.EQ);
         expr();
-        System.out.println("pop " + id);
+        emit("pop " + id);
         match(TokenType.SEMICOLON);
     }
 
@@ -85,12 +94,12 @@ public class Parser {
         if (currentToken != null && currentToken.type == TokenType.PLUS) {
             match(TokenType.PLUS);
             term();
-            System.out.println("add");
+            emit("add");
             oper();
         } else if (currentToken != null && currentToken.type == TokenType.MINUS) {
             match(TokenType.MINUS);
             term();
-            System.out.println("sub");
+            emit("sub");
             oper();
         }
     }
@@ -100,7 +109,7 @@ public class Parser {
         if (currentToken != null && currentToken.type == TokenType.NUMBER) {
             number();
         } else if (currentToken != null && currentToken.type == TokenType.IDENT) {
-            System.out.println("push " + currentToken.lexeme);
+            emit("push " + currentToken.lexeme);
             match(TokenType.IDENT);
         } else {
             throw new Error("syntax error");
@@ -108,19 +117,7 @@ public class Parser {
     }
 
     void number() {
-        System.out.println("push " + currentToken.lexeme);
+        emit("push " + currentToken.lexeme);
         match(TokenType.NUMBER);
-    }
-
-    /** Teste */
-    public static void main(String[] args) {
-        String input = """
-            let a = 42 + 5 - 8;
-            let b = 56 + 8;
-            print a + b + 6;
-                """;
-
-        Parser p = new Parser(input.getBytes());
-        p.parse();
     }
 }

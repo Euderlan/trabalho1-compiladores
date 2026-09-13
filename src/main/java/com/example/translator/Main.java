@@ -1,33 +1,20 @@
 package com.example.translator;
 
+import com.example.translator.interpreter.Interpretador;
 import com.example.translator.parser.Parser;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class Main {
     public static void main(String[] args) {
-        String source;
+        String input = """
+            let a = 42 + 2;
+            let b = 15 + 3;
+            print a + b;        
+                """;
+        
+        Parser p = new Parser(input.getBytes());
+        p.parse();
 
-        if (args.length > 0) {
-            try {
-                source = Files.readString(Path.of(args[0]));
-            } catch (IOException e) {
-                System.err.println("Falha ao ler o arquivo: " + e.getMessage());
-                return;
-            }
-        } else {
-            try {
-                source = new String(System.in.readAllBytes());
-            } catch (IOException e) {
-                System.err.println("Falha ao ler a entrada padrao: " + e.getMessage());
-                return;
-            }
-        }
-
-        // Instancia o Parser com o texto lido e realiza o parsing
-        Parser parser = new Parser(source);
-        parser.parse();
+        Interpretador i = new Interpretador(p.output());
+        i.run();
     }
 }

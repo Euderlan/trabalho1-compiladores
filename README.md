@@ -52,3 +52,28 @@ Saída esperada:<NUMBER>45</NUMBER>
 <IDENT>preco</IDENT>
 <MINUS>-</MINUS>
 <NUMBER>876</NUMBER>
+
+### 4. Interpretador (Execução em Máquina de Pilha)
+O **Interpretador** processa a representação intermediária gerada pelo `Parser` simulando o comportamento de uma máquina virtual[cite: 9]:
+* **Pilha (`Stack<Integer>`)**: Avalia as operações aritméticas e armazena os operandos temporários[cite: 9].
+* **Tabela de Símbolos (`Map<String, Integer>`)**: Armazena as variáveis e recupera seus valores durante a execução[cite: 9].
+* **Instruções Suportadas**: `PUSH`, `POP`, `ADD`, `SUB` e `PRINT`[cite: 9].
+
+---
+
+### Execução Completa do Interpretador (Parte 8)
+
+#### No PowerShell:
+```powershell
+# Compilar todos os pacotes com codificação UTF-8
+javac -encoding utf-8 (Get-ChildItem -Recurse -Filter *.java).FullName
+
+# Executar o fluxo completo (Scanner -> Parser -> Interpretador)
+java -cp src/main/java com.example.translator.Main
+
+let a = 42 + 2;
+let b = 15 + 3;
+print a + b;
+
+Saida final:
+62
