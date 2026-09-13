@@ -83,7 +83,7 @@ public class Parser {
         match(TokenType.SEMICOLON);
     }
 
-    /** expr -> term oper */
+/** expr -> term oper */
     void expr() {
         term();
         oper();
@@ -104,8 +104,29 @@ public class Parser {
         }
     }
 
-    /** term -> number | identifier */
+    /** term -> factor termOper */
     void term() {
+        factor();
+        termOper();
+    }
+
+    /** termOper -> * factor termOper | / factor termOper | ϵ */
+    void termOper() {
+        if (currentToken != null && currentToken.type == TokenType.STAR) {
+            match(TokenType.STAR);
+            factor();
+            emit("mul");
+            termOper();
+        } else if (currentToken != null && currentToken.type == TokenType.SLASH) {
+            match(TokenType.SLASH);
+            factor();
+            emit("div");
+            termOper();
+        }
+    }
+
+    /** factor -> number | identifier */
+    void factor() {
         if (currentToken != null && currentToken.type == TokenType.NUMBER) {
             number();
         } else if (currentToken != null && currentToken.type == TokenType.IDENT) {

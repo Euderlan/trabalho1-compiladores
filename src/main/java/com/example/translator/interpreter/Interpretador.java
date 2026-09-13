@@ -14,6 +14,8 @@ class Command {
     public enum Type {
         ADD,   // Soma os dois últimos valores da pilha
         SUB,   // Subtrai os dois últimos valores da pilha
+        MUL,   // Multiplica os dois útimos valores da pilha
+        DIV,   // Divide os dois útimos valores da pilha
         PUSH,  // Empilha um número constante ou o valor de uma variável
         POP,   // Desempilha o valor do topo e armazena em uma variável
         PRINT  // Desempilha o topo e exibe o valor no terminal
@@ -95,6 +97,17 @@ public class Interpretador {
                     arg2 = stack.pop();
                     arg1 = stack.pop();
                     stack.push(arg1 - arg2);
+                    break;
+
+                case MUL:
+                    arg2 = stack.pop();
+                    arg1 = stack.pop();
+                    stack.push(arg1 * arg2);
+                    break;
+                case DIV:
+                    arg2 = stack.pop();
+                    arg1 = stack.pop();
+                    stack.push(arg1 / arg2);
                     break;
 
                 case PUSH:

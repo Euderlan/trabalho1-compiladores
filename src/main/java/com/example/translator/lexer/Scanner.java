@@ -60,13 +60,19 @@ public class Scanner {
             return readNumber();
         }
 
-        switch (ch) {
+switch (ch) {
             case '+':
                 advance();
                 return new Token(TokenType.PLUS, "+", null, line);
             case '-':
                 advance();
                 return new Token(TokenType.MINUS, "-", null, line);
+            case '*':
+                advance();
+                return new Token(TokenType.STAR, "*");
+            case '/':
+                advance();
+                return new Token(TokenType.SLASH, "/");
             case '=':
                 advance();
                 return new Token(TokenType.EQ, "=");

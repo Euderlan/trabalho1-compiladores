@@ -6,8 +6,8 @@ import com.example.translator.parser.Parser;
 public class Main {
     public static void main(String[] args) {
         String input = """
-            let a = 42 + 2;
-            let b = 15 + 3;
+            let a = 10 * 4 + 2;
+            let b = 20/2;
             print a + b;        
                 """;
         
